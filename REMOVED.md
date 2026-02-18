@@ -43,3 +43,10 @@ I have changed the following files and folders for Laravel REST API only starter
         ...
     }
 ```
+
+#### .env.example
+
+```diff
+    ...
+-   "VITE_APP_NAME=\"${APP_NAME}\""
+```

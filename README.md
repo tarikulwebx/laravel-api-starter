@@ -1,59 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel API Starter
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel 12 API-only starter kit with [Laravel Sanctum](https://laravel.com/docs/sanctum) authentication, rate limiting, CORS, and OpenAPI documentation via [Scramble](https://scramble.dedoc.co).
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **API-only** — No frontend; designed for SPA or mobile clients
+- **Sanctum authentication** — Token-based auth with register, login, logout
+- **Email verification** — Optional verification flow with resend
+- **Password reset** — Forgot and reset password via token
+- **API versioning** — Routes under `/v1`
+- **Rate limiting** — Throttling for auth, API, and authenticated endpoints
+- **CORS** — Configurable via `APP_FRONTEND_URL` / `CORS_ALLOWED_ORIGINS`
+- **OpenAPI docs** — Scramble generates docs from routes and Form Requests
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.2+
+- Composer
+- SQLite (default) or MySQL/PostgreSQL
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+# Clone and enter the project
+git clone <repository-url> laravel-api-starter
+cd laravel-api-starter
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# One-time setup (install, .env, key, migrate)
+composer run setup
+```
 
-## Laravel Sponsors
+Or step by step:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+```
 
-### Premium Partners
+## Configuration
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **`.env`** — Copy from `.env.example`. Set `APP_URL` and, for CORS, `APP_FRONTEND_URL` or `CORS_ALLOWED_ORIGINS` (comma-separated).
+- **Database** — Default is SQLite; configure `DB_*` for MySQL/PostgreSQL if needed.
+- **Mail** — Set `MAIL_*` for email verification and password reset (e.g. Mailtrap, SMTP).
 
-## Contributing
+## Running the Application
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The app is intended to be served by [Laravel Herd](https://herd.laravel.com) at `https://laravel-api-starter.test` (or your project’s kebab-case name). No `php artisan serve` is required when using Herd.
 
-## Code of Conduct
+For local development without Herd:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan serve
+```
 
-## Security Vulnerabilities
+Optional (if using queues):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+composer run dev   # runs serve + queue:listen
+```
+
+## API Documentation
+
+Scramble serves interactive API docs at **`/docs/api`** when the app is running. It builds OpenAPI from your routes and Form Request validation.
+
+## API Endpoints (v1)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/v1/register` | — | Register; returns user + token; sends verification email |
+| POST | `/v1/login` | — | Login; returns user + token |
+| POST | `/v1/logout` | Bearer | Revoke current token |
+| GET | `/v1/user` | Bearer | Current authenticated user |
+| POST | `/v1/email/verify/{id}/{hash}` | Bearer + Signed | Verify email |
+| POST | `/v1/email/send-verification` | Bearer | Resend verification email |
+| POST | `/v1/forgot-password` | — | Request password reset email |
+| POST | `/v1/reset-password` | — | Reset password with token |
+
+Authenticated requests must send: `Authorization: Bearer <token>`.
+
+## Testing
+
+Tests use [Pest](https://pestphp.com). Run:
+
+```bash
+php artisan test --compact
+```
+
+Or via Composer:
+
+```bash
+composer run test
+```
+
+## Code Style
+
+[Laravel Pint](https://laravel.com/docs/pint) is used for formatting:
+
+```bash
+vendor/bin/pint --dirty --format agent
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The Laravel framework is open-sourced under the [MIT license](https://opensource.org/licenses/MIT).

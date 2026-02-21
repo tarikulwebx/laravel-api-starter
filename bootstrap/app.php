@@ -12,7 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: ''
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->api(append: ['throttle:api']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

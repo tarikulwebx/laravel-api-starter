@@ -35,30 +35,16 @@ class VerifyEmailNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $id = $notifiable->getKey();
-        $hash = sha1($notifiable->getEmailForVerification());
-        $expiration = now()->addMinutes(config('auth.verification.expire', 60));
-
-
         $verifyUrl = URL::temporarySignedRoute(
             'verification.verify',
-            $expiration,
+            now()->addMinutes(config('auth.verification.expire', 60)),
             [
-                'id' => $id,
-                'hash' => $hash
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification())
             ]
         );
 
-        $parsedUrl = parse_url($verifyUrl);
-        parse_str($parsedUrl['query'] ?? '', $queryParams);
-        $signature = $queryParams['signature'] ?? null;
-
-        $url = config('app.frontend_url') . '/verify-email?' . http_build_query([
-            'id' => $id,
-            'hash' => $hash,
-            'signature' => $signature,
-            'expires' => $expiration->getTimestamp(),
-        ]);
+        $url = config('app.frontend_url') . '/verify-email?url=' . urlencode($verifyUrl);
 
         return (new MailMessage)
             ->subject('Verify Email Address')
